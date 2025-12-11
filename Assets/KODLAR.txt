@@ -1,0 +1,125 @@
+    public void ButonIslemleri(string Deger)
+    {
+        switch (Deger)
+        {
+            case "Basla":
+                SesCal(1);
+                PanelIslemler(0, false);
+                PanelIslemler(4, true);
+                StartCoroutine(KoliGonder());
+                break;
+            case "Durdur":
+                SesCal(1);
+                PanelIslemler(1, true);
+                Time.timeScale = 0;
+                break;
+            case "DevamEt":
+                SesCal(1);
+                PanelIslemler(1, false);
+                Time.timeScale = 1;
+                break;
+            case "Tekrar":
+                SesCal(1);
+                SceneManager.LoadScene(_SahneIndex);
+                Time.timeScale = 1;
+                break;
+            case "Cikis":
+                SesCal(1);
+                PanelIslemler(3, true);
+                break;
+            case "Evet":
+                SesCal(1);
+                Debug.Log("Cıktın");
+                Application.Quit();
+                break;
+            case "Hayir":
+                SesCal(1);
+                PanelIslemler(3, false);
+                break;
+
+            case "OyunSesiAyar":
+                SesCal(1);
+
+                if (PlayerPrefs.GetInt("OyunSesi") == 0)
+                {
+                    PlayerPrefs.SetInt("OyunSesi", 1);
+                    _SesAyarButonlari[0].sprite = _SpriteObjeleri[0];
+                    _Sesler[0].mute = false;
+
+                }
+                else
+                {
+                    PlayerPrefs.SetInt("OyunSesi", 0);
+                    _SesAyarButonlari[0].sprite = _SpriteObjeleri[1];
+                    _Sesler[0].mute = true;
+                }
+
+                break;
+            case "EfektSesiAyar":
+                SesCal(1);
+                if (PlayerPrefs.GetInt("EfektSesi") == 0)
+                {
+                    PlayerPrefs.SetInt("EfektSesi", 1);
+                    _SesAyarButonlari[1].sprite = _SpriteObjeleri[2];
+                    for (int i = 1; i < _Sesler.Length; i++)
+                    {
+                        _Sesler[i].mute = false;
+                    }
+                }
+                else
+                {
+                    PlayerPrefs.SetInt("EfektSesi", 0);
+                    _SesAyarButonlari[1].sprite = _SpriteObjeleri[3];
+                    for (int i = 1; i < _Sesler.Length; i++)
+                    {
+                        _Sesler[i].mute = true;
+                    }
+                }
+                break;
+        }
+
+    }
+
+    void PanelIslemler(int Index, bool Durum)
+    {
+        _Paneller[Index].SetActive(Durum);
+    }
+
+    void SahneIlkIslemler()
+    {
+        if (PlayerPrefs.GetInt("OyunSesi") == 1)
+        {
+            _SesAyarButonlari[0].sprite = _SpriteObjeleri[0];
+            _Sesler[0].mute = false;
+        }
+        else
+        {
+            _SesAyarButonlari[0].sprite = _SpriteObjeleri[1];
+            _Sesler[0].mute = true;
+        }
+        if (PlayerPrefs.GetInt("EfektSesi") == 1)
+        {
+            _SesAyarButonlari[1].sprite = _SpriteObjeleri[2];
+            for (int i = 1; i < _Sesler.Length; i++)
+            {
+                _Sesler[i].mute = false;
+            }
+        }
+        else
+        {
+            _SesAyarButonlari[1].sprite = _SpriteObjeleri[3];
+            for (int i = 1; i < _Sesler.Length; i++)
+            {
+                _Sesler[i].mute = true;
+            }
+        }
+
+        if (!PlayerPrefs.HasKey("YuksekSkor"))
+        {
+            PlayerPrefs.SetInt("YuksekSkor", 0);
+            PlayerPrefs.SetInt("OyunSesi", 1);
+            PlayerPrefs.SetInt("EfektSesi", 1);
+        }
+
+        _SkorTextleri[1].text = PlayerPrefs.GetInt("YuksekSkor").ToString();
+    }

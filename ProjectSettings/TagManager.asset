@@ -24,6 +24,7 @@ TagManager:
   - Devam
   - Ayar Button
   - BantCarpisma
+  - Market
   layers:
   - Default
   - TransparentFX

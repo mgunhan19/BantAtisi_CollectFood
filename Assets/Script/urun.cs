@@ -81,6 +81,20 @@ public class urun : MonoBehaviour
             Debug.Log($"{urunAdi} sepete girdi!");
             return;
         }
+         if (other.CompareTag("Market"))
+        {
+            // HAREKET EDEN ARABANIN ROOT'UNA YAPIŞTIR
+            Transform araba = other.transform.root; // Arabanın en üst parent'i
+
+            transform.SetParent(araba);
+
+            // Fizik hareketini durdur
+            if (_Rb != null)
+            {
+                _Rb.linearVelocity = Vector3.zero;
+                _Rb.angularVelocity = Vector3.zero;
+                _Rb.isKinematic = true;   // Artık fizik etkilemesin
+            }
 
         // ================================
         // 📌 DUVAR
@@ -90,6 +104,7 @@ public class urun : MonoBehaviour
             GameManager.Instance.SesCal(5);
             Debug.Log($"{urunAdi} duvara çarptı!");
             return;
+        }
         }
 
         // ================================

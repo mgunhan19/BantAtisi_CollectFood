@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4542026109901829341}
   - component: {fileID: 6680775744510597493}
-  - component: {fileID: 5246507046630869508}
   - component: {fileID: 2361136738557518228}
   m_Layer: 0
   m_Name: GameManager
@@ -49,7 +48,10 @@ MonoBehaviour:
   HedefUrunSayisi: 2
   MevcutUrunSayisi: 0
   BaslangicUrunSayisi: 4
-  UrunCikisNoktasi: {fileID: 0}
+  popupPrefab: {fileID: 0}
+  popupParent: {fileID: 0}
+  sepetKonumu: {fileID: 0}
+  UrunCikisNoktalari: []
   UrunHavuzu:
   - {fileID: 0}
   - {fileID: 0}
@@ -57,14 +59,12 @@ MonoBehaviour:
   - {fileID: 0}
   SesKaynak: {fileID: 0}
   SesKlipleri: []
-  _SesAyarButonlari:
-  - {fileID: 0}
-  - {fileID: 0}
-  _SpriteObjeleri:
-  - {fileID: 21300000, guid: 218be20bf2931d64a9cc5b830d6ad288, type: 3}
-  - {fileID: 21300000, guid: 72be356da13d2d040828b107d0779371, type: 3}
-  - {fileID: 21300000, guid: cb8210372af424c4da93196f0027b6a8, type: 3}
-  - {fileID: 21300000, guid: 08da88fabe150a548b9adcbdd5995092, type: 3}
+  muzikIcon: {fileID: 0}
+  muzikAcikSprite: {fileID: 0}
+  muzikKapaliSprite: {fileID: 0}
+  efektIcon: {fileID: 0}
+  efektAcikSprite: {fileID: 0}
+  efektKapaliSprite: {fileID: 0}
   _Paneller:
   - {fileID: 0}
   - {fileID: 0}
@@ -85,19 +85,6 @@ MonoBehaviour:
   - Yag
   - Sucuk
   sliderFill: {fileID: 0}
---- !u!114 &5246507046630869508
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9097684257107024103}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 62a02845a07a1ba42a1954c8727f31fe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Ses: {fileID: 0}
 --- !u!82 &2361136738557518228
 AudioSource:
   m_ObjectHideFlags: 0

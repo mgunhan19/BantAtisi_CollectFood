@@ -146,7 +146,7 @@ public class GameManager : MonoBehaviour
             urun.SetActive(true);
 
             HavuzIndex++;
-            KalanUrunAdeti--;
+            //KalanUrunAdeti--;
 
             if (_GenelTextler.Length >= 3)
                 _GenelTextler[2].text = KalanUrunAdeti.ToString();
@@ -157,24 +157,31 @@ public class GameManager : MonoBehaviour
     public void UrunTopla(GameObject urun)
     {
         MevcutUrunSayisi++;
+    
+    // Ürün artık oyun alanından (havuz/sahne) çıktı ve sepete girdi
+    // Bu yüzden kalan adet 1 azalmalı.
+    KalanUrunAdeti = Mathf.Max(KalanUrunAdeti - 1, 0); 
 
-        if (_GenelTextler.Length >= 2)
-            _GenelTextler[1].text = MevcutUrunSayisi.ToString();
+    if (_GenelTextler.Length >= 3)
+    {
+        _GenelTextler[1].text = MevcutUrunSayisi.ToString(); // Kazanılan
+        _GenelTextler[2].text = KalanUrunAdeti.ToString();   // Kalan
+    }
 
-        KaybetmeKontrolu();
+    KaybetmeKontrolu();
     }
 
     public void UrunCikar(GameObject urun, bool pasif = false)
     {
-        if (pasif)
-        {
-            KalanUrunAdeti = Mathf.Max(KalanUrunAdeti - 1, 0);
+        // Ürün yere çarptı veya yandı, artık kazanılamaz.
+    KalanUrunAdeti = Mathf.Max(KalanUrunAdeti - 1, 0);
 
-            if (_GenelTextler.Length >= 3)
-                _GenelTextler[2].text = KalanUrunAdeti.ToString();
-        }
+    if (_GenelTextler.Length >= 3)
+    {
+        _GenelTextler[2].text = KalanUrunAdeti.ToString();
+    }
 
-        KaybetmeKontrolu();
+    KaybetmeKontrolu();
     }
 
     void KaybetmeKontrolu()
@@ -282,14 +289,27 @@ public class GameManager : MonoBehaviour
                 break;
 
             case "Tekrar":
-                Time.timeScale = 1;
-                SceneManager.LoadScene(_SahneIndex);
-                break;
+                 Time.timeScale = 1;
 
-            case "SonrakiLevel":
-                Time.timeScale = 1;
-                SceneManager.LoadScene(_SahneIndex + 1);
-                break;
+    if (AdManager.Instance != null)
+        AdManager.Instance.ShowInterstitialWithScene(_SahneIndex);
+    else
+        SceneManager.LoadScene(_SahneIndex);
+
+    break;
+
+           case "SonrakiLevel":
+    Time.timeScale = 1;
+
+    if (AdManager.Instance != null)
+    {
+        AdManager.Instance.ShowInterstitialWithCount(_SahneIndex + 1);
+    }
+    else
+    {
+        SceneManager.LoadScene(_SahneIndex + 1);
+    }
+    break;
 
             case "Cikis":
                 PanelIslemler(5, true);
@@ -302,6 +322,7 @@ public class GameManager : MonoBehaviour
             case "Hayir":
                 PanelIslemler(5, false);
                 break;
+                
         }
     }
 
@@ -380,4 +401,9 @@ public class GameManager : MonoBehaviour
 
         Destroy(popup);
     }
+    public void OyunDevamEt()
+{
+    OyunBittimi = false; // Kilidi açıyoruz
+    KaybetmeKontrolu();  // Sayıların yeni halini kontrol edip "Kazandın" panelini tetikliyoruz
+}
 }

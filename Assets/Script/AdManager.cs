@@ -1,106 +1,144 @@
 using UnityEngine;
 using GoogleMobileAds.Api;
 using System;
+using UnityEngine.SceneManagement;
+
 
 public class AdManager : MonoBehaviour
 {
-    public static AdManager Instance;
+    // Singleton yapısı
+    public static AdManager Instance { get; private set; }
+private int _targetSceneIndex = -1;
 
-    private RewardedAd rewardedAd;
+    // Geçiş Reklamı Nesnesi
+    private InterstitialAd interstitialAd;
 
-    private string rewardedID = "ca-app-pub-3940256099942544/5224354917"; // TEST ID
+    // Reklam birimi ID'si
+    private string _adUnitId = "ca-app-pub-5401991319150609/1057741773";
 
-    void Awake()
+    private void Awake()
     {
-        if (Instance == null)
+        // Singleton Kontrolü
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else Destroy(gameObject);
-    }
-
-    void Start()
-    {
-        MobileAds.Initialize(initStatus => { });
-        LoadRewarded();
-    }
-
-    // ---------------------------------------------------
-    // REWARDED LOAD (GoogleMobileAds v8.x)
-    // ---------------------------------------------------
-    public void LoadRewarded()
-    {
-        Debug.Log("Rewarded yükleniyor...");
-
-        AdRequest request = new AdRequest();
-
-        RewardedAd.Load(rewardedID, request, (RewardedAd ad, LoadAdError loadError) =>
-        {
-            if (loadError != null)
-            {
-                Debug.Log("Rewarded yüklenemedi: " + loadError);
-                return;
-            }
-
-            rewardedAd = ad;
-            Debug.Log("Rewarded başarıyla yüklendi ✔");
-
-            rewardedAd.OnAdFullScreenContentClosed += () =>
-            {
-                Debug.Log("Rewarded kapandı → yeniden yükleniyor");
-                LoadRewarded();
-            };
-
-            rewardedAd.OnAdFullScreenContentFailed += (AdError error) =>
-            {
-                Debug.Log("Rewarded açılırken hata: " + error);
-            };
-        });
-    }
-
-    // ---------------------------------------------------
-    // SHOW REWARDED (GoogleMobileAds v8.x)
-    // ---------------------------------------------------
-    public void ShowRewarded()
-    {
-        if (rewardedAd == null)
-        {
-            Debug.Log("Rewarded hazır değil → yükleniyor...");
-            LoadRewarded();
+            Destroy(gameObject);
             return;
         }
 
-        rewardedAd.Show((Reward reward) =>
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        InitializeAdMob();
+    }
+
+    private void InitializeAdMob()
+    {
+        // ⚠️ ESKİ SDK UYUMLULUĞU
+        // RequestConfiguration.Builder BU SDK'DA YOK
+        // Bu yüzden Families Policy ayarı BURADA KALDIRILDI
+        // (Reklam çalışmasını bozmaz)
+
+        MobileAds.Initialize(initStatus =>
         {
-            Debug.Log("Kral reklamı izledi ve ödülü aldı ✔");
-            GiveReward();
+            Debug.Log("AdMob initialization complete.");
+            LoadInterstitialAd();
         });
     }
 
-    // ---------------------------------------------------
-    // ÖDÜL (MÜŞTERİ MEMNUNİYETİ ARTTIRMA)
-    // ---------------------------------------------------
-private void GiveReward()
+    public void LoadInterstitialAd()
+    {
+        if (interstitialAd != null)
+        {
+            interstitialAd.Destroy();
+            interstitialAd = null;
+        }
+
+        Debug.Log("AdMob Loading Ad: " + _adUnitId);
+
+        AdRequest request = new AdRequest();
+
+        InterstitialAd.Load(_adUnitId, request,
+            (InterstitialAd ad, LoadAdError error) =>
+            {
+                if (error != null)
+                {
+                    Debug.LogError("Interstitial ad failed to load: " + error.GetMessage());
+                    return;
+                }
+
+                interstitialAd = ad;
+                Debug.Log("Interstitial ad loaded successfully.");
+                RegisterEventHandlers(interstitialAd);
+            });
+    }
+
+    private void RegisterEventHandlers(InterstitialAd ad)
+    {
+           ad.OnAdFullScreenContentClosed += () =>
+    {
+        Debug.Log("Interstitial kapandı");
+
+        LoadInterstitialAd();
+
+        if (_targetSceneIndex != -1)
+        {
+            SceneManager.LoadScene(_targetSceneIndex);
+            _targetSceneIndex = -1;
+        }
+    };
+
+    ad.OnAdFullScreenContentFailed += (AdError error) =>
+    {
+        Debug.LogError("Interstitial hata verdi");
+
+        if (_targetSceneIndex != -1)
+        {
+            SceneManager.LoadScene(_targetSceneIndex);
+            _targetSceneIndex = -1;
+        }
+    };
+    }
+
+    public void ShowInterstitialAd()
+    {
+        if (interstitialAd != null && interstitialAd.CanShowAd())
+        {
+            Debug.Log("AdMob Showing Interstitial Ad.");
+            interstitialAd.Show();
+        }
+        else
+        {
+            Debug.LogWarning("Interstitial ad not ready.");
+            LoadInterstitialAd();
+        }
+    }
+   public void ShowInterstitialWithCount(int sceneIndex)
 {
-    Debug.Log("🔥 Kral reklam ödülünü aldı!");
+    _targetSceneIndex = sceneIndex;
 
-    // 1) Memnuniyet arttır
-    GameManager.Instance.AdjustMemnuniyet(+0.20f);
-
-    // 2) Sepete +1 hediye ürün ekle
-    GameManager.Instance.HediyeUrunEkle();
-
-    // 3) POP-UP ANİMASYONU
-    GameManager.Instance.GosterPopUp("+1");
-
-    // 4) Kaybettin panelini kapat
-    GameManager.Instance.PanelIslemlerExternal(4, false);
-
-    // 5) Oyun devam etsin
-    Time.timeScale = 1;
+    if (interstitialAd != null && interstitialAd.CanShowAd())
+    {
+        Time.timeScale = 1; // 🔥 çok önemli
+        interstitialAd.Show();
+    }
+    else
+    {
+        // Reklam yoksa direkt geç
+        SceneManager.LoadScene(_targetSceneIndex);
+    }
 }
 
+public void ShowInterstitialWithScene(int sceneIndex)
+{
+    _targetSceneIndex = sceneIndex;
 
-
+    if (interstitialAd != null && interstitialAd.CanShowAd())
+    {
+        Time.timeScale = 1f;
+        interstitialAd.Show();
+    }
+    else
+    {
+        SceneManager.LoadScene(_targetSceneIndex);
+    }
+}
 }
